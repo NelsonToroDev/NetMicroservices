@@ -23,9 +23,16 @@ public class ItemsController : ControllerBase
 
     // GET /items/{id}
     [HttpGet("{id}")]
-    public ItemDto? GetById(Guid id)
+    public ActionResult<ItemDto> GetById(Guid id)
     {
-        return itemDtos.SingleOrDefault(i => i.Id == id);
+        var itemDto = itemDtos.SingleOrDefault(i => i.Id == id);
+        if(itemDto == null)
+        {
+            // return http 404 not found
+            return NotFound($"ItemDto with id '{id}' not found");
+        }
+
+        return itemDto;
     }
 
     // POST /items/{id}
@@ -48,7 +55,7 @@ public class ItemsController : ControllerBase
         var existingItem = itemDtos.Where(i => i.Id == id).SingleOrDefault();
         if (existingItem == null)
         {
-            return this.NotFound($"ItemDto with id '{id}' not found");
+            return NotFound($"ItemDto with id '{id}' not found");
         }
 
         var updatedItem = existingItem with
@@ -69,6 +76,11 @@ public class ItemsController : ControllerBase
     public IActionResult Delete(Guid id)
     {
         var index = itemDtos.FindIndex(i => i.Id == id);
+        if (index < 0)
+        {
+            return NotFound($"ItemDto with id '{id}' not found");
+        }
+
         itemDtos.RemoveAt(index);
         return NoContent();
     }
